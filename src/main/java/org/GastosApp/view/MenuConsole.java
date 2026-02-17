@@ -1,4 +1,4 @@
-package org.GastosApp.logic;
+package org.GastosApp.view;
 
 import org.GastosApp.CSV.PersistenceCSV;
 import org.GastosApp.model.Account;
@@ -6,7 +6,9 @@ import org.GastosApp.model.Movement;
 import org.GastosApp.model.User;
 import org.GastosApp.services.OpenPDFService;
 
+import org.GastosApp.controller.Controller;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,10 @@ import java.util.Scanner;
 
 // generara una interfaz para interaccion
 public class MenuConsole {
+
+    Controller control = new Controller();
+
+
     private static int opcion = 0;
     private static boolean salir = false;
     private static Scanner teclado = new Scanner(System.in);
@@ -25,7 +31,8 @@ public class MenuConsole {
     private static User usuarioLogueado;
 
     // Constructor privado para evitar que alguien haga "new MenuConsole()"
-    private MenuConsole() {}
+    private MenuConsole() {
+    }
 
 
 
@@ -110,8 +117,10 @@ public class MenuConsole {
         System.out.println("Ingrese el nombre de la cuenta");
         String nombreCuenta = teclado.nextLine();
         System.out.println("Ingrese el monto inicial:  ");
-        double montoInicial = Double.parseDouble(teclado.nextLine());
-        usuarioLogueado.addAccount(montoInicial,nombreCuenta, usuarioLogueado.getId());
+        BigDecimal montoInicial = new BigDecimal(teclado.nextLine());
+        usuarioLogueado.addAccount( montoInicial,nombreCuenta, usuarioLogueado.getId());
+        // TODO aqui deberia integrar mi controller para trabajar con la db
+
         guardarTodo();
         System.out.println("Cuenta creada con exito");
     }
@@ -120,7 +129,7 @@ public class MenuConsole {
         System.out.println("Ingrese el nombre de la cuenta a depositar: ");
         String cuenta = teclado.nextLine();
         System.out.println("Ingrese el monto a depositar: ");
-        double dinDeposito = Double.parseDouble(teclado.nextLine());
+        BigDecimal dinDeposito = new BigDecimal(teclado.nextLine());
         System.out.println(usuarioLogueado.depositar(cuenta,dinDeposito));
         guardarTodo();
     }
@@ -131,7 +140,7 @@ public class MenuConsole {
         System.out.println("Ingrese el nombre de la cuenta destino");
         String acc2 = teclado.nextLine();
         System.out.println("Ingrese el monto a transferir");
-        double monto = Double.parseDouble(teclado.nextLine());
+        BigDecimal monto = new BigDecimal(teclado.nextLine());
         boolean exito = usuarioLogueado.getCm().transferencia(acc1, acc2, monto);
         if (exito) {
             System.out.println(exito ? "Transferencia realizada." : "Error: Saldo insuficiente.");

@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.FileReader;
 import java.io.IOException;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,10 +23,6 @@ public class PersistenceCSV {
     public PersistenceCSV(String path){
         this.filePath = path;
     }
-
-    /// TODO Modificar metodos para que trabajen con map y transformarlos a listas para poder utilizarlos
-
-
 
     // Metodos de usuarios
 
@@ -50,7 +47,8 @@ public class PersistenceCSV {
                 String nombre = fila[1];
                 String pass = fila[2]; // TODO esto debe mejorarse
                 // lo ingresamos al usuario al map
-                usuariosCargados.put(userId ,new User(userId, nombre,pass));
+                String email = "prueba@gmail.com";
+                usuariosCargados.put(userId ,new User(userId, nombre,pass,email));
             }
             // usamos el formato try-with-resources se autocierra el archivo
 //                csvReader.close();
@@ -114,7 +112,7 @@ public class PersistenceCSV {
 
                 while((fila = csvReader.readNext()) != null){
                     int id = Integer.parseInt(fila[0]);
-                    double monto = Double.parseDouble(fila[2]);
+                    BigDecimal monto = new BigDecimal(fila[2]);
                     String nombre = fila[1];
                     int userId = Integer.parseInt(fila[3]);
                     cuentasCargadas.put(id , new Account(id,monto,nombre,userId));

@@ -7,6 +7,7 @@ import org.GastosApp.model.Account;
 import org.GastosApp.model.Movement;
 
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,20 +19,20 @@ public class CostsManager {
         // sera 0 al principio
         private double totalGlobal = 0;
         private final Map<Integer, Account> accounts =  new HashMap<Integer, Account>();
-        private final String[] categorias = {"Nueva Cuenta", "Eliminacion de cuenta", "Deposito", "Transferencia", "Gasto"};
+        private final String[] categorias = {"Nueva Cuenta", "Eliminación de cuenta", "Deposito", "Transferencia", "Gasto"};
         // record guardara en forma de string los movimientos de cuentas(TODO Podria darle algun persistencia )
         // va a contener una lista de movimientos
         private final List<Movement> record = new ArrayList<>();
 
 
 
-        public void registrarMovimiento(String cate, String desc, double amount){
+        public void registrarMovimiento(String cate, String desc, BigDecimal amount){
             this.record.add(new Movement(cate,desc,amount));
         }
 
         public CostsManager() {}
 
-        public void addAccount(double montoInicial, String nombre, int idUser){
+        public void addAccount(BigDecimal montoInicial, String nombre, int idUser){
                 Account acc = new Account(montoInicial, nombre, idUser);
                 // Actualizamos a Map
                 accounts.put(acc.getAccountId(), acc);
@@ -47,7 +48,7 @@ public class CostsManager {
             Account accFound = findAccountByName(nombreBusqueda);
             String cuentaNom;
             if(accFound != null){
-                if(accFound.getMonto() <= 0){
+                if(accFound.getMonto().compareTo(BigDecimal.ZERO) <= 0){
                     cuentaNom = accFound.getNombre();
                     accounts.remove(accFound.getAccountId());
                     registrarMovimiento(categorias[1],"Cuenta eliminada " + cuentaNom, accFound.getMonto());
@@ -61,10 +62,10 @@ public class CostsManager {
         }
 
 
-        public double getTotalGlobal() {
-            double sum = 0;
+        public BigDecimal getTotalGlobal() {
+            BigDecimal sum = new BigDecimal(0);
             for(Account acc: accounts.values()){
-                sum+= acc.getMonto();
+                sum.add(acc.getMonto());
             }
             return sum;
         }
@@ -100,7 +101,7 @@ public class CostsManager {
 
         }
 
-        public boolean deposito(String nom, double din){
+        public boolean deposito(String nom, BigDecimal din){
             Account acc = findAccountByName(nom);
             if(acc != null){
                 acc.deposito(din);
@@ -113,10 +114,10 @@ public class CostsManager {
         // metodo de transferencia TODO utilizar metodos propios de la clase Account deposito, extraccion
         // debo restar de la cuenta inicio el monto necesario, previamente verificando que lo tenga disponible, luego "depositarlo" en la cuenta destino
         // de momento solo el que consuma este metodo manejara el resultado brindado
-        public boolean transferencia(String cuenta1, String cuenta2, double din ){
+        public boolean transferencia(String cuenta1, String cuenta2, BigDecimal din ){
             Account acc1 = findAccountByName(cuenta1);
             Account acc2 = findAccountByName(cuenta2);
-            if(accounts.containsKey(acc1.getAccountId()) && accounts.containsKey(acc2.getAccountId()) && acc1.getMonto() >= din){
+            if(accounts.containsKey(acc1.getAccountId()) && accounts.containsKey(acc2.getAccountId()) && acc1.getMonto().compareTo(din) >= 0){
                 acc1.extraccion(din);
                 acc2.deposito(din);
                 registrarMovimiento(categorias[3], "Se realizo una transferencia de la cuenta " + acc1.getNombre() + " a la cuenta " + acc2.getNombre() + " por el monto de $" + din, din);
@@ -126,9 +127,16 @@ public class CostsManager {
             }
         }
 
-        public boolean gasto(String nom, double din){
+        /*
+                1: El primer valor es mayor que el segundo.
+
+                0: Ambos valores son iguales.
+
+               -1: El primer valor es menor que el segundo
+            * */
+        public boolean gasto(String nom, BigDecimal din){
             Account acc = findAccountByName(nom);
-            if(acc!= null && acc.getMonto() >= din){
+            if(acc!= null && (acc.getMonto().compareTo(din)) >= 0){
                 // utilizamos el metodo de extraccion para el gasto
                 acc.extraccion(din);
                 registrarMovimiento(categorias[4], "Se realizo el gasto de $" + din + " desde la cuenta " + acc.getNombre(), din);

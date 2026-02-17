@@ -1,16 +1,18 @@
 package org.GastosApp.model;
 
+import java.math.BigDecimal;
+
 // esta clase,se encarga de mantener el estado individual de la cuenta
 
 public class Account {
     private static int contadorId = 0;
     // Atributos, monto de la cuenta, nombre, identificador
-    private double monto;
+    private BigDecimal monto;
     private String nombre;
     private int accountId = 0;
     private int userId = 0;
 
-    public Account(double montoInicial, String nombre, int userId){
+    public Account(BigDecimal montoInicial, String nombre, int userId){
         this.monto = montoInicial;
         this.nombre = nombre;
         contadorId++;
@@ -19,7 +21,7 @@ public class Account {
 
     }
     // sobrecarga de metodos
-    public Account(int id, double montoInicial, String nombre, int userId){
+    public Account(int id, BigDecimal montoInicial, String nombre, int userId){
         this.monto = montoInicial;
         this.nombre = nombre;
         this.accountId = id;
@@ -30,11 +32,13 @@ public class Account {
         }
     }
 
-    public double getMonto() {
+    public Account(){}
+
+    public BigDecimal getMonto() {
         return monto;
     }
 
-    public void setMonto(double monto) {
+    public void setMonto(BigDecimal monto) {
         this.monto = monto;
     }
 
@@ -55,13 +59,13 @@ public class Account {
         return this.userId;
     }
 
-    public void deposito(double din){
-        double sum = this.getMonto() + din;
+    public void deposito(BigDecimal din){
+        BigDecimal sum = this.getMonto().add(din);
         this.setMonto(sum);
     }
 
-    public void extraccion(double din){
-        double rest = this.getMonto() - din;
+    public void extraccion(BigDecimal din){
+        BigDecimal rest = this.getMonto().subtract(din);
         this.setMonto(rest);
     }
 

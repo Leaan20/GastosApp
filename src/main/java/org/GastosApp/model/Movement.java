@@ -1,18 +1,19 @@
 package org.GastosApp.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 public class Movement {
 
     private final String description;
     private final String category;
-    private final double amount;
+    private final BigDecimal amount;
     private final String date;
     // Fecha formateada
     private static final DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     // para cuando utilicemos la base de datos
 
-    public Movement( String category, String desc , double amount){
+    public Movement( String category, String desc , BigDecimal amount){
         this.category = category;
         this.description = desc;
         this.amount = amount;
@@ -33,7 +34,7 @@ public class Movement {
         return category;
     }
 
-    public double getAmount(){ return amount; }
+    public BigDecimal getAmount(){ return amount; }
 
     public String getDate(){ return date; }
 

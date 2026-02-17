@@ -1,14 +1,16 @@
 package org.GastosApp;
 
 import org.GastosApp.CSV.PersistenceCSV;
+import org.GastosApp.DB.DBConnect;
 import org.GastosApp.services.DataService;
-import org.GastosApp.logic.MenuConsole;
+import org.GastosApp.view.MenuConsole;
 import org.GastosApp.model.Account;
 import org.GastosApp.model.User;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,6 +36,14 @@ public class Main {
         int intentos = 0;
         int maxIntentos = 3;
 
+
+        // Prueba de conexion
+        try{
+            DBConnect.getConexion();
+            System.out.println("Db conectada exitosamente");
+        }catch(SQLException exc){
+            System.out.println("No fue posible conectarse a la db");
+        }
 
         // Hacemos la carga de informacion
         PersistenceCSV pcsvCuentas = new PersistenceCSV("datos_cuentas.csv");

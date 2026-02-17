@@ -2,27 +2,32 @@ package org.GastosApp.model;
 
 import org.GastosApp.logic.CostsManager;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 public class User {
+    // TODO se vera cambiado cuando integremos la DB
     private static int countId = 0;
 
     private String nombre;
     private String password;
+    private String email;
     private int userId;
     // cada usuario podra tener su propio administrador de gastos
     private CostsManager cm;
 
-    public User(String nombre, String pass){
+    public User(String nombre, String pass, String email){
         this.nombre = nombre;
         this.password = pass;
+        this.email = email;
         countId++;
         this.userId = countId;
         this.cm = new CostsManager();
     }
-    public User(int id, String nombre, String pass){
+    public User(int id, String nombre, String pass, String email){
         this.nombre = nombre;
         this.password = pass;
+        this.email = email;
         this.userId = id;
         if(id >= countId){
             countId = id;
@@ -30,6 +35,23 @@ public class User {
         this.cm = new CostsManager();
     }
 
+    public User(){}
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
 
     public int getId(){
         return this.userId;
@@ -47,8 +69,12 @@ public class User {
         return cm;
     }
 
+    public String getEmail(){
+        return this.email;
+    }
+
     // hacemos eso para acortar el metodo
-    public void addAccount(double monto, String nombre, int idUser){
+    public void addAccount(BigDecimal monto, String nombre, int idUser){
          this.cm.addAccount(monto, nombre, idUser);
     }
 
@@ -60,7 +86,7 @@ public class User {
         this.cm.showAccountsInfo();
     }
 
-    public String depositar(String nom, double din){
+    public String depositar(String nom, BigDecimal din){
         boolean depo = this.cm.deposito(nom, din);
         if(!depo){
             return "No es posible efectuar el deposito";
@@ -69,8 +95,8 @@ public class User {
         }
     }
 
-    public String transferir(String cuenta1, String cuenta2, double din){
-        boolean result = this.cm.transferencia(cuenta1,cuenta2,din);
+    public String transferir(String cuenta1, String cuenta2, BigDecimal din){
+        boolean result = this.cm.transferencia(cuenta1,cuenta2, din);
         if(!result){
             return "No pudo realizarse la trasnferencia";
         }else {
@@ -78,7 +104,7 @@ public class User {
         }
     }
 
-    public double showTotal(){
+    public BigDecimal showTotal(){
         return this.cm.getTotalGlobal();
     }
 
