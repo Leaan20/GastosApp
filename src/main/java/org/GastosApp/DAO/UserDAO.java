@@ -1,5 +1,8 @@
 package org.GastosApp.DAO;
 
+
+import org.mindrot.jbcrypt.BCrypt;
+
 import org.GastosApp.model.User;
 import org.GastosApp.DB.DBConnect;
 
@@ -9,28 +12,35 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 
 // para escrituras --> executeUpdate
 // para busquedas --> executeQuery
 
+// TODO integrar OPTIONALS
 
 // nuestro DAO, se encargara de recibir y enviar los datos a la DB --> MySQL
 public class UserDAO {
         // Contendra los metodos para actualizar los registros de la base de datos y la tabla de usuarios
         public UserDAO(){}
 
+        // Utilizamos Bcrypt
         public void DAOCreateUser(User usuario){
             // utilizar los datos del usuario(en este caso ya pasamos el objeto creado)
                 // Como ya pase el nombre del schema en la conexion no necesito repetirlo aca
                 String sql = "INSERT INTO users(name, password, email) VALUES(?, ?, ?)";
+
+                // hasheamos la pass
+                String passHash = BCrypt.hashpw(usuario.getPassword(), BCrypt.gensalt());
+
             // utilizamos try with resources para abrir y cerrar la conexion a la db
                 try(Connection conn = DBConnect.getConexion()){
                         PreparedStatement pstmt = conn.prepareStatement(sql);
                         // utilizamos el preparedStatement seteando los elementos , en el orden que los queremos a traves de los indices, en este caso inician en 1..2..3
                         // no enviamos el id, ya que queremos que lo decida la base de datos directamente.
                         pstmt.setString(1,usuario.getNombre());
-                        pstmt.setString(2,usuario.getPassword());
+                        pstmt.setString(2,passHash); // enviamos las pass hasheada
                         pstmt.setString(3,usuario.getEmail());
 
                         pstmt.executeUpdate();
@@ -80,25 +90,56 @@ public class UserDAO {
         }
 
         // Metodos de hidratacion de objetos
-        public User DAOGetUser(int user_id){
+    // utilizando optional
+        public Optional<User> DAOGetUser(int user_id){
                 String sql = "SELECT * FROM users WHERE user_id= ?";
                 User usuario = new User();
 
-                try(Connection conn = DBConnect.getConexion()){
-                    PreparedStatement pstmt = conn.prepareStatement(sql);
+                try(Connection conn = DBConnect.getConexion();
+                PreparedStatement pstmt = conn.prepareStatement(sql)){
+
                     pstmt.setInt(1,user_id);
                     ResultSet res = pstmt.executeQuery();
-                    while(res.next()){
+                    if(res.next()){
                         usuario.setUserId(res.getInt("user_id"));
                         usuario.setNombre(res.getString("name"));
                         usuario.setPassword(res.getString("password"));
                         usuario.setEmail(res.getString("email"));
+                        return Optional.of(usuario); // si esta devolvemos el usuario
                     }
+
                     System.out.println("Usuario obtenido");
 
                 }catch(SQLException exc){
                     System.out.println("Error al buscar al usuario " + exc.getMessage());
                 }
+            return Optional.empty();// caso contrario devolvemos un vacio
+        }
+
+        // TODO implementar metodo de busqueda por email(una vez logueado)
+        public User DAOGetUserByEmail(String email){
+            String sql = "SELECT * FROM users WHERE email = ?";
+            User usuario = new User();
+
+            try(Connection conn = DBConnect.getConexion();
+                PreparedStatement pstmt = conn.prepareStatement(sql)){
+
+                pstmt.setString(1,email);
+                ResultSet res = pstmt.executeQuery();
+
+                if(res.next()){
+                    usuario.setUserId(res.getInt("user_id"));
+                    usuario.setNombre(res.getString("name"));
+                    usuario.setPassword(res.getString("password"));
+                    usuario.setEmail(res.getString("email"));
+                }
+
+                System.out.println("Usuario obtenido");
+
+            }catch(SQLException exc){
+                System.out.println("Error al buscar al usuario " + exc.getMessage());
+            }
+
             return usuario;
         }
 
@@ -125,5 +166,29 @@ public class UserDAO {
             }
 
             return usuariosCargados;
+        }
+
+        // utilizamos nuevamente BCrypt para poder verificar si la  pass ingresada es correcta y verificar al usuario
+        public boolean DAOVerifyLogin(String email, String passCandidate){
+            String sql = "SELECT password FROM users WHERE email = ?";
+
+            try(Connection conn = DBConnect.getConexion();
+            PreparedStatement pstmt = conn.prepareStatement(sql)){
+                pstmt.setString(1,email);
+
+                ResultSet res = pstmt.executeQuery();
+                if(res.next()){
+                    String hashDB = res.getString("password");
+
+                    // BCrypt verifica si la pass ingresada coincide con la guardada.
+                    return BCrypt.checkpw(passCandidate, hashDB);
+                }
+
+
+            }catch(SQLException exc){
+                System.out.println("Error al verificar la pass " + exc.getMessage());
+            }
+            // caso contrario retornamos un false que sera manejado por el controller
+            return false;
         }
 }

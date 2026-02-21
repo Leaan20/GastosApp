@@ -7,6 +7,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+
+import java.util.List;
+
+// TODO integrar OPTIONALS
+
 
 public class AccountDAO {
         public AccountDAO(){}
@@ -49,8 +55,8 @@ public class AccountDAO {
         public void DAODeleteAccount(Account acc){
                 String sql = "DELETE FROM accounts WHERE account_id = ?";
 
-                try(Connection conn = DBConnect.getConexion()){
-                        PreparedStatement pstmt = conn.prepareStatement(sql);
+                try(Connection conn = DBConnect.getConexion();
+                PreparedStatement pstmt = conn.prepareStatement(sql)){
 
                         pstmt.setInt(1, acc.getAccountId());
 
@@ -65,8 +71,9 @@ public class AccountDAO {
                 String sql = "SELECT * FROM accounts WHERE account_id = ?";
                 Account acc = null;
 
-                try(Connection conn = DBConnect.getConexion()){
-                        PreparedStatement pstmt = conn.prepareStatement(sql);
+                try(Connection conn = DBConnect.getConexion();
+                    PreparedStatement pstmt = conn.prepareStatement(sql)){
+
                         pstmt.setInt(1,account_id);
 
                         ResultSet res = pstmt.executeQuery();
@@ -75,12 +82,43 @@ public class AccountDAO {
                                 acc = new Account(res.getInt("account_id"), res.getBigDecimal("mount"), res.getString("name"), res.getInt("user_id") );
 
                         }
-                        System.out.println("Cuentsa obtenida");
+                        System.out.println("Cuenta obtenida");
 
                 }catch(SQLException exc){
                         System.out.println("Error al encontrar la cuenta " + exc.getMessage());
                 }
 
                 return acc;
+        }
+
+        // en este metodo necesitaremos el id del usuario para traer sus cuentas
+        // el controller recibira una lista de las cuentas del usuario
+        public List<Account> DAOGetUserAccounts(int user_id){
+                List<Account> cuentasUs = new ArrayList<>();
+
+                String sql = "SELECT * FROM accounts WHERE user_id = ? ";
+                try(Connection conn = DBConnect.getConexion();
+                PreparedStatement pstmt = conn.prepareStatement(sql)){
+
+                        pstmt.setInt(1,user_id);
+
+                       try( ResultSet res = pstmt.executeQuery();){
+                               while(res.next()){
+                                       cuentasUs.add(new Account(
+                                               res.getInt("account_id"),
+                                               res.getBigDecimal("amount"),
+                                               res.getString("name"),
+                                               res.getInt("user_id")
+                                       ));
+                               }
+                       }
+
+
+                }catch(SQLException exc){
+                        System.out.println("Error al obtener las cuentas del usuario " + user_id + " \n" + exc.getMessage());
+                }
+
+                return cuentasUs;
+
         }
 }
